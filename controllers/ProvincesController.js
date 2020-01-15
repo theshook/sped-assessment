@@ -1,23 +1,30 @@
-const sequelize = require('../config/database');
-const Province = require('../models/ProvinceModel');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
+const { Province, School } = require('../models/Model');
 
 exports.index = async (req, res) => {
   try {
+    const page = req.query.page || 0;
+
     if (req.query.name) {
-      const province = await Province.findAll({ 
+      const province = await Province.findAndCountAll({
+        include: [School],
         where: {
           name: {
             [Op.like]: `${req.query.name}%`
           }
         },
+        limit: 10,
+        offset: (Number(page) === 0) ? 0 : ((page - 1) * 10),
         order: ['name']
       });
       return res.json(province);
     }
 
-    const provinces = await Province.findAll({
+    const provinces = await Province.findAndCountAll({
+      include: [School],
+      limit: 10,
+      offset: (Number(page) === 0) ? 0 : ((page - 1) * perPage),
       order: ['name']
     });
     res.json(provinces);
@@ -38,8 +45,9 @@ exports.store = async (req, res) => {
 exports.show = async (req, res) => {
   try {
     const province = await Province.findAll({
+      include: [School],
       where: {
-        id:req.params.id
+        id: req.params.id
       }
     });
     res.json(province);
@@ -52,7 +60,7 @@ exports.destroy = async (req, res) => {
   try {
     const province = await Province.destroy({
       where: {
-        id:req.params.id
+        id: req.params.id
       }
     });
 
@@ -65,12 +73,12 @@ exports.destroy = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const province = await Province.update(req.body, {
-        where: {
-          id: req.params.id
-        }
-      });
+      where: {
+        id: req.params.id
+      }
+    });
     res.json(province);
-  } catch(err) {
+  } catch (err) {
     console.log(err);
   }
 }
