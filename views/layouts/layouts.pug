@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+	head
+		title= title
+		link(rel='stylesheet' href='/css/bootstrap.min.css')
+		script(src="/js/jquery.min.js")
+		script(src='/js/bootstrap.bundle.js')
+		block headers
+	body
+		include ../partials/navbar
+		.container.mt-3
+			block content
+			include ../partials/footer
+		block scripts

@@ -4,34 +4,18 @@ const { Province, School } = require('../models/Model');
 
 exports.index = async (req, res) => {
   try {
-    const page = req.query.page || 0;
-
-    if (req.query.name) {
-      const province = await Province.findAndCountAll({
-        include: [School],
-        where: {
-          name: {
-            [Op.like]: `${req.query.name}%`
-          }
-        },
-        limit: 10,
-        offset: (Number(page) === 0) ? 0 : ((page - 1) * 10),
-        order: ['name']
-      });
-      return res.json(province);
-    }
-
     const provinces = await Province.findAndCountAll({
-      include: [School],
-      limit: 10,
-      offset: (Number(page) === 0) ? 0 : ((page - 1) * perPage),
-      order: ['name']
+      include: [School]
     });
-    res.json(provinces);
+
+    return res.render('Provinces/index', {
+      provinces: provinces,
+      title: 'Province'
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-}
+};
 
 exports.store = async (req, res) => {
   try {
@@ -40,21 +24,19 @@ exports.store = async (req, res) => {
   } catch (err) {
     res.status(400).send(err.errors[0].message);
   }
-}
+};
 
 exports.show = async (req, res) => {
   try {
-    const province = await Province.findAll({
-      include: [School],
-      where: {
-        id: req.params.id
-      }
+    const province = await Province.findByPk(req.params.id, {
+      include: [School]
     });
-    res.json(province);
+    data = { province, title: 'Province' };
+    res.render('Provinces/edit', data);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-}
+};
 
 exports.destroy = async (req, res) => {
   try {
@@ -64,11 +46,11 @@ exports.destroy = async (req, res) => {
       }
     });
 
-    res.json(province);
+    res.redirect('/provinces');
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-}
+};
 
 exports.update = async (req, res) => {
   try {
@@ -77,9 +59,8 @@ exports.update = async (req, res) => {
         id: req.params.id
       }
     });
-    res.json(province);
+    res.redirect('/provinces');
   } catch (err) {
     console.log(err);
   }
-}
-
+};
