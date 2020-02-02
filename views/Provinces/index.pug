@@ -1,59 +1,82 @@
 extends ../layouts/layouts.pug
 
 block headers
-	link(ref='stylesheet' href='https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css')
+  link(ref='stylesheet' href='https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css')
 
 block content
-	.card
-		.card-body
-			table.table.table-striped.table-sm#provinces
-				thead
-					tr
-						th(scope='col') Name
-						th
-				tbody
-					each province in provinces.rows
-						tr
-							td= province.name
-							td
-								.d-flex.justify-content-end
-									a.btn.btn-info.btn-sm.mx-1(href=`/provinces/${province.id}`) Show
-									button.btn.btn-primary.btn-sm(type='button', data-toggle='modal', data-target='#exampleModal', data-province=province) Edit
-									form.mx-1(method='POST', action=`/provinces/${province.id}/delete`, onsubmit="return confirm('Do you really want to remove the form?');")
-										button.btn.btn-danger.btn-sm Delete
+  .card
+    .card-body
+      table.table.table-striped.table-sm#provinces
+        thead
+          tr
+            th(scope='col') Name
+            th
+        tbody
+          each province in provinces.rows
+            tr
+              td= province.name
+              td
+                .d-flex.justify-content-end
+                  button.btn.btn-info.btn-sm.mx-1(type='button', data-toggle='modal', data-target='#showModal', data-province=province) Show
+                  button.btn.btn-primary.btn-sm.mx-1(type='button', data-toggle='modal', data-target='#exampleModal', data-province=province) Edit
+                  form.mx-1(method='POST', action=`/provinces/${province.id}/delete`, onsubmit="return confirm('Do you really want to remove the form?');")
+                    button.btn.btn-danger.btn-sm Delete
 
-	#exampleModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
-		.modal-dialog(role='document')
-			.modal-content
-				.modal-header
-					h5#exampleModalLabel.modal-title Edit this item?
-					button.close(type='button', data-dismiss='modal', aria-label='Close')
-						span(aria-hidden='true') &times;
-				.modal-body
-					form#submitForm(method='POST')
-						input#province(type='text', class='form-control', name='name', value='')
-				.modal-footer
-					button.btn.btn-secondary(type='button', data-dismiss='modal') Close
-					button.btn.btn-primary#submitModal(type='submit', onclick="submitModal()") Save changes
+  #showModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='showModalLabel', aria-hidden='true')
+      .modal-dialog(role='document')
+        .modal-content
+          .modal-header
+            h5#showModalLabel.modal-title This item is associated with
+            button.close(type='button', data-dismiss='modal', aria-label='Close')
+              span(aria-hidden='true') &times;
+          .modal-body
+            ul#schools
+            p#none.text-center
+
+
+  #exampleModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#exampleModalLabel.modal-title Edit this item?
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          form#submitForm(method='POST')
+            input#province(type='text', class='form-control', name='name', value='')
+        .modal-footer
+          button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+          button.btn.btn-primary#submitModal(type='submit', onclick="submitModal()") Save changes
 
 block scripts
-	script(src='/js/jquery.dataTables.min.js')
-	script(src='https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js')
-	script.
-		function submitModal() {
-			let province = $('#province').val()
-			let form = $('#submitForm')
-			if (province !== '')
-				form.submit()
-			else
-				alert('Value must not be empty')
-		}
-		$(document).ready(function() {
-			$('#exampleModal').on('show.bs.modal', function(e) {
-				var province = JSON.parse(e.relatedTarget.dataset.province);
-				$('#submitForm').attr('action', `/provinces/${province.id}`)
-				$('#province').val(province.name)
-				// Do some stuff w/ it.
-			});
-			$('#provinces').DataTable();
-		} );
+  script(src='/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js')
+  script.
+    function submitModal() {
+      let province = $('#province').val()
+      let form = $('#submitForm')
+      if (province !== '')
+        form.submit()
+      else
+        alert('Value must not be empty')
+    }
+    $(document).ready(function() {
+      $('#exampleModal').on('show.bs.modal', function(e) {
+        let province = JSON.parse(e.relatedTarget.dataset.province);
+        $('#submitForm').attr('action', `/provinces/${province.id}`)
+        $('#province').val(province.name)
+      });
+
+      $('#showModal').on('show.bs.modal', function(e) {
+        let province = JSON.parse(e.relatedTarget.dataset.province);
+        $('#schools > li').remove()
+
+        if (province.schools.length === 0) return $('#none').text('No data associated in here')
+        $('#none').text('')
+        $.each(province.schools, function(index, value) {
+          $('#schools').append(`<li>${value.name}</li>`)
+        })
+      });
+
+      $('#provinces').DataTable();
+    } );
