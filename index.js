@@ -22,7 +22,9 @@ app.use(helmet());
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js'));
 app.use('/js', express.static(__dirname + '/node_modules/jquery/dist'));
 app.use('/js', express.static(__dirname + '/node_modules/datatables/media/js'));
+app.use('/css', express.static(__dirname + '/css'));
 app.use('/css', express.static(__dirname + '/node_modules/bootstrap/dist/css'));
+
 
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
@@ -42,6 +44,7 @@ if (app.get('env') === 'development') {
 /** Routes */
 app.use('/provinces', require('./routes/ProvincesRoute'));
 app.use('/api/schools', require('./routes/SchoolRoutes'));
+app.use('/pupils', require('./routes/PupilRoutes'));
 /** End Routes */
 
 const port = process.env.PORT || 3000;

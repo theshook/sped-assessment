@@ -1,0 +1,126 @@
+extends ../layouts/layouts.pug
+
+block headers
+  link(ref='stylesheet' href='https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css')
+
+block content
+  .row
+    .container.mb-2
+      button.btn.btn-info.float-right.mx-1(type='button', data-toggle='modal', data-target='#createModal',data-pupil=pupil) Create New
+
+  .row
+    .container      
+      .card
+        .card-body
+          table.table.table-striped.table-sm#pupils
+            thead
+              tr
+                th(scope='col') First Name                
+                th(scope='col') Last Name                
+                th(scope='col') Birth Date
+                th
+            tbody
+              each pupil in pupils.rows
+                tr
+                  td= pupil.firstname
+                  td= pupil.lastname
+                  td= pupil.birthdate
+                  td
+                    .d-flex.justify-content-end
+                      button.btn.btn-info.btn-sm.mx-1(type='button', data-toggle='modal', data-target='#detailsModal', data-pupil=pupil) Details
+                      button.btn.btn-primary.btn-sm.mx-1(type='button', data-toggle='modal', data-target='#createModal', data-pupil=pupil) Edit
+                      form.mx-1(method='POST', action=`/pupils/delete/${pupil.id}`, onsubmit="return confirm('Do you really want to remove the form?');")
+                        button.btn.btn-danger.btn-sm Delete
+
+  #createModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='createModalLabel', aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#createModalLabel.modal-title 
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          form#submitForm(method='POST')
+            .form-group
+              label First Name
+              input.form-control(type='text',id='firstname',name='firstname',required='required')
+            .form-group
+              label Last Name
+              input.form-control(type='text',id='lastname',name='lastname',required='required')
+            .form-group
+              label Birth Date
+              input.form-control(type='date',id='birthdate',name='birthdate',required='required')
+            .form-group
+              label Address
+              textarea.form-control(id='address',name='address',cols="30",rows="5",required='required')
+            .form-group
+              button.btn.btn-info.btn-sm.float-right#btnSubmit(type='submit', onclick='validateData()') Save
+
+  #detailsModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='detailsModalLabel', aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#detailsModalLabel.modal-title Details
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body      
+            .form-group
+              label.col-sm-4.col-form-label First Name :
+              label.col-sm-8.col-form-label#lblFirstname
+            .form-group
+              label.col-sm-4.col-form-label Last Name :
+              label.col-sm-8.col-form-label#lblLastname
+            .form-group
+              label.col-sm-4.col-form-label Birth Date :
+              label.col-sm-8.col-form-label#lblBirthdate
+            .form-group
+              label.col-sm-4.col-form-label Address :
+              label.col-sm-8.col-form-label#lblAddress
+
+block scripts  
+  script(src='/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js')
+  script.
+      $(document).ready(function() {
+        InitializeFormData();
+        ShowDetails();
+        $('#pupils').DataTable();                 
+      });
+
+      function ShowDetails() {
+         $('#detailsModal').on('show.bs.modal', function(e) {
+            let pupil = JSON.parse(e.relatedTarget.dataset.pupil);
+            if (pupil != undefined)
+            {
+              $('#lblFirstname').text(pupil.firstname);
+              $('#lblLastname').text(pupil.lastname);
+              $('#lblBirthdate').text(pupil.birthdate);
+              $('#lblAddress').text(pupil.address);              
+            }
+        });
+      }
+
+      function InitializeFormData() {
+          $('#createModal').on('show.bs.modal', function(e) {
+            let dataset = e.relatedTarget.dataset.pupil;
+            if (dataset != undefined) {
+              let pupil = JSON.parse(dataset);
+              $('#firstname').val(pupil.firstname);
+              $('#lastname').val(pupil.lastname);
+              $('#birthdate').val(pupil.birthdate);
+              $('#address').val(pupil.address);
+              $('#submitForm').attr('action', `/pupils/${pupil.id}`);
+              $('#createModalLabel').text('Edit Record');
+            }
+            else {
+              $('#firstname').val('');
+              $('#lastname').val('');
+              $('#birthdate').val('');
+              $('#address').val('');
+              $('#submitForm').attr('action','');
+              $('#createModalLabel').text('Create Record');
+            }           
+          });
+      }
+ 
+      function validateData() { }
